@@ -24,7 +24,7 @@ app.post("/snake", async (req, res) => {
 //get all score
 app.get("/snake", async (_, res) => {
     try {
-        const allScores = await pool.query("SELECT * FROM snake ORDER BY score DESC");
+        const allScores = await pool.query("SELECT * FROM snake ORDER BY score DESC  LIMIT 10");
         res.json(allScores.rows);
     } catch (err) {
         console.error(err.message);
