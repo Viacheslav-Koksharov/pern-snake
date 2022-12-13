@@ -10,11 +10,11 @@ require("dotenv").config();
 const devconfig = `postgresql://${process.env.PG_USER}:${process.env.PG_PASSWORD}@${process.env.
     PG_HOST}:${process.env.PG_PORT}/${process.env.PG_DATABASE}`
 
-const proConfig = process.env.DATABASE_URL;
+const prodConfig = process.env.POSTGRESQL_EXTERNAL_URL;
 
 const pool = new Pool(
     {
-        connectionString: process.env.NODE_ENV === "production" ? proConfig : devconfig
+        connectionString: process.env.NODE_ENV === "production" ? prodConfig : devconfig
     });
 
 module.exports = pool;
