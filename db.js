@@ -1,6 +1,5 @@
 const Pool = require("pg").Pool;
 require("dotenv").config();
-
 // const devconfig = {
 //     user: process.env.PG_USER,
 //     password: process.env.PG_PASSWORD,
@@ -12,11 +11,10 @@ const devconfig = `postgresql://${process.env.PG_USER}:${process.env.PG_PASSWORD
     PG_HOST}:${process.env.PG_PORT}/${process.env.PG_DATABASE}`
 
 const proConfig = process.env.DATABASE_URL;
-// console.log(devconfig);
 
 const pool = new Pool(
     {
         connectionString: process.env.NODE_ENV === "production" ? proConfig : devconfig
     });
-// console.log(pool);
+
 module.exports = pool;
