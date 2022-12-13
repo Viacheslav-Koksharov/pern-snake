@@ -8,7 +8,7 @@ width: 500px;
 height: 500px;
 justify-content: center;
 align-items: center;
-background-color: #272829;
+background-color: #333;
 `;
 
 const Cell = styled.div`

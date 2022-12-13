@@ -1,6 +1,6 @@
 import axios from "axios";
 
-axios.defaults.baseURL = "http://localhost:8005";
+axios.defaults.baseURL = "https://snake-api.onrender.com";
 
 export const getPlayer = () => {
     return axios.get("/snake");

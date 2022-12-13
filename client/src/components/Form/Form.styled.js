@@ -16,7 +16,7 @@ padding: 5px;
 border: 1px solid black;
 border-radius: 4px;
 color:white;
-background-color: #272829;
+background-color: #333;
 cursor: pointer;
 `;
 

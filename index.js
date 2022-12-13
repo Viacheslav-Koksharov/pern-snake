@@ -2,10 +2,28 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const pool = require("./db");
+const path = require("path");
+const PORT = process.env.PORT || 8005;
+
+//process.env.PORT
+//process.env.NODE_ENV
+
 //middleware
-app.use(cors());
+app.use(cors({
+    origin: ["https://snake-api.onrender.com"],
+}));
 app.use(express.json()); //req.body
 app.use(express.urlencoded({ extended: true }))
+// app.use(express.static(path.join(__dirname, "client/build")));
+app.use(express.static("./client/build"));
+
+if (process.env.NODE_ENV === "production") {
+    //server static component
+    //npm run build
+    app.use(express.static(path.join(__dirname, "client/build")));
+}
+console.log(__dirname)
+console.log(path.join(__dirname, "client/build"))
 
 //ROUTES//
 //create a score
@@ -41,6 +59,6 @@ app.delete("/snake", async (_, res) => {
     }
 });
 
-app.listen(8005, () => {
-    console.log("server has started on port 8005");
+app.listen(PORT, () => {
+    console.log(`server has started on port ${PORT}`);
 });
