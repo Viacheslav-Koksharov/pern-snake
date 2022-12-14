@@ -8,15 +8,13 @@ const PORT = process.env.PORT || 8005;
 //middleware
 app.use(cors());
 app.use(express.json()); //req.body
-// app.use(express.urlencoded({ extended: true }))
-// app.use(express.static("./build"));
 
 if (process.env.NODE_ENV === "production") {
     //server static component
     //npm run build
-    app.use(express.static(path.join(__dirname, "build")));
+    app.use(express.static(path.join(__dirname, "client/build")));
 }
-
+console.log(path.join(__dirname, "client/build"))
 //ROUTES//
 //create a score
 app.post("/snake", async (req, res) => {
