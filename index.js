@@ -14,7 +14,8 @@ if (process.env.NODE_ENV === "production") {
     //npm run build
     app.use(express.static(path.join(__dirname, "client/build")));
 }
-console.log(path.join(__dirname, "client/build"))
+app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html')));
+
 //ROUTES//
 //create a score
 app.post("/snake", async (req, res) => {
