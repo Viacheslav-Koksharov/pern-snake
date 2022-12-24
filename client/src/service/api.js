@@ -1,6 +1,6 @@
 import axios from "axios";
 
-axios.defaults.baseURL = "https://snake-api.onrender.com";
+axios.defaults.baseURL = "https://pern-snake-app.herokuapp.com/";
 
 const getPlayer = () => {
     return axios.get("/snake");
