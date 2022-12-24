@@ -11,7 +11,8 @@ margin: 0 10px 0 0;
 padding: 2px;
 `;
 const Button = styled.button`
-margin: 0;
+margin: 0 auto;
+width: 100px;
 padding: 5px;
 border: 1px solid black;
 border-radius: 4px;
