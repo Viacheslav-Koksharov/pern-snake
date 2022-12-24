@@ -1,362 +1,236 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { playerContext } from '../../context/PlayerContextProvider';
+import { directionContext } from '../../context/DirectionContextProvider';
+import { aliveContext } from '../../context/AliveContextProvider';
+import { getRandomCoordinates, getRandomFeedType, addPlayer } from '../../helpers/helpers';
+import { buttons } from '../../constants/buttons';
+import { icons } from '../../constants/icons';
+import { fullpoints } from '../../constants/fullpoints';
+import * as api from '../../service/api';
 import Container from '../Container';
-// import Form from '../Form';
+import FormPlayer from '../FormPlayer';
 import PlayersList from '../PlayersList';
 import Snake from '../Snake';
 import Food from '../Food';
-import {Box,Content,Input,Wrapper,Button } from './App.styled';
+import { Wrapper } from './App.styled';
 
-const getRandomCoordinates = () => {
-	let min = 1;
-	let max = 28;
-	let x = Math.floor((Math.random() * (max - min + 1) + min) / 2) * 2;
-	let y = Math.floor((Math.random() * (max - min + 1) + min) / 2) * 2;
-	return [x, y];
-};
-const getRandomFeedType = ()=>{
-	return Math.floor((Math.random() * 3));
-}
 const App = () => {
-	const [playerName, setPlayerName] = useState('');
-  	const [snakeDots, setSnakeDots] = useState([[0, 0], [2,0]]);
-	const [foodDot, setFoodDot] = useState(getRandomCoordinates());
-	const [direction, setDirection] = useState('RIGHT');
-    const [pause, SetPause] = useState(false);
-	const [alive, setAlive] = useState(false);
+	const { KEYS, DIRECTIONS } = buttons;
+	const { UP, DOWN, RIGHT, LEFT, PAUSE } = DIRECTIONS;
+	const { START, END } = fullpoints;
+	const { postPlayer } = api;
+	const { name, setName, count, setCount } = useContext(playerContext);
+	const { direction, setDirection } = useContext(directionContext);
+	const { alive, setAlive } = useContext(aliveContext);
+  	const [snakeDots, setSnakeDots] = useState([[0, 0], [2, 0]]);
+	const [foodDot, setFoodDot] = useState(getRandomCoordinates);
+    const [pause, setPause] = useState(false);
 	const [speed, setSpeed] = useState(300);
-	const [name, setName] = useState('Play');
-	const [points, setPoints] = useState(0);
 	const [feedType, setFeedType] = useState(getRandomFeedType());
-	
-	// useEffect(() => {
-	// 	// document.onkeydown = onKeyDown;
-	// 	// checkIfOutOfBorders();
-	// 	// checkIfEat();
-	// 	// checkIfCollapsed();
-	// 	// const run = setInterval(() => {
-	// 	// 	moveSnake(alive);
-	// 	// }, speed);
-	// 	// return () => clearInterval(run);
-	// });
+	const [isOver, setIsOver] = useState(false);
 
 	useEffect(() => {
+		const onKeyDown = (e) => {
+			switch (e.keyCode) {
+				case KEYS.UP:
+					direction !== DOWN && setDirection(UP);
+					break;
+				case KEYS.DOWN:
+					direction !== UP && setDirection(DOWN);
+					break;
+				case KEYS.LEFT:
+					direction !== RIGHT && setDirection(LEFT);
+					break;
+				case KEYS.RIGHT:
+					direction !== LEFT && setDirection(RIGHT);
+					break;
+				case KEYS.PAUSE: setPause(pause => !pause);
+					   break;
+				default:
+					break;
+			}
+		}
+
 		document.addEventListener('keydown', onKeyDown);
 		return () => {
-		document.removeEventListener('keydown', onKeyDown);
+			document.removeEventListener('keydown', onKeyDown);
 		};
-	  });
+	}, [DOWN, KEYS.DOWN, KEYS.LEFT, KEYS.PAUSE, KEYS.RIGHT, KEYS.UP, LEFT, RIGHT, UP, direction, setDirection]);
 
-	useEffect(() =>{
+	useEffect(() => {
 		if (pause) {
 			return;
-		  }
+		}
+
 		const moveSnake = () => {
-			let dots = [...snakeDots];
+			const dots = [...snakeDots];
 			let head = dots[dots.length - 1];
+			const [dotX, dotY] = head;
+
 			switch (direction) {
-				case 'RIGHT':
-					head = [head[0] + 2, head[1]];
+				case RIGHT:
+					head = [dotX + 2, dotY];
 					break;
-				case 'LEFT':
-					head = [head[0] - 2, head[1]];
+				case LEFT:
+					head = [dotX - 2, dotY];
 					break;
-				case 'DOWN':
-					head = [head[0], head[1] + 2];
+				case DOWN:
+					head = [dotX, dotY + 2];
 					break;
-				case 'UP':
-					head = [head[0], head[1] - 2];
+				case UP:
+					head = [dotX, dotY - 2];
 					break;
-          		case 'PAUSE':
-			setSnakeDots([...snakeDots]);
+          		case PAUSE:
+					setSnakeDots([...snakeDots]);
 					break;
 				default:
 					break;
 			}
-
 			dots.push(head);
 			dots.shift();
 			setSnakeDots(dots);
-	}
+		}
+
 		const run = setInterval(() => {
-		moveSnake(alive);
-	}, speed);
-	return () => clearInterval(run);
-	},[alive, direction, pause, snakeDots, speed])
+			moveSnake(alive);
+		}, speed);
+		return () => clearInterval(run);
+	},[DOWN, LEFT, PAUSE, RIGHT, UP, alive, direction, pause, snakeDots, speed])
 
-	useEffect(()=>{
-
-		function checkIfOutOfBorders() {
-			let dots = [...snakeDots];
-				let head = snakeDots[snakeDots.length - 1];
+	useEffect(() => {
+		const checkIfOutOfBorders = () => {
+			const dots = [...snakeDots];
+			let head = snakeDots[snakeDots.length - 1];
 			//Out Of Space left
-			if( head[1] < 0 ){
-			  head[1] = 28;
+			if (head[1] < START ){
+			  head[1] = END;
 			  setSnakeDots(dots);
-		   }
+		   	}
 			//Out Of Space right
-			if( head[1] > 28){
-			  head[1] = 0;
+			if (head[1] > END){
+			  head[1] = START;
 			  setSnakeDots(dots);
 			}
 			//Out Of Space up
-			if( head[0] < 0 ){
-			  head[0] = 28;
+			if (head[0] < START ){
+			  head[0] = END;
 			  setSnakeDots(dots);
 			}
 			//Out Of Space down
-			if( head[0] > 28 ){
-			  head[0] = 0;
+			if (head[0] > END ){
+			  head[0] = START;
 			  setSnakeDots(dots);
 			}
 		}
-		const checkIfCollapsed=()=> {
-			let segments = [...snakeDots];
-			let head = snakeDots[snakeDots.length - 1];
-			segments.pop();
-			segments.forEach(dot => {
-            if (head[0] === dot[0] && head[1] === dot[1]) {
-				onGameOver()
-			}
-		});
+
+		const onGameOver = () => {
+			setFoodDot([10, 10]);
+			setDirection(RIGHT);
+			setSpeed(300);
+			setSnakeDots([[0, 0], [2, 0]]);
+			setIsOver(true);
 		}
 
-		function checkIfEat() {
-			let head = snakeDots[snakeDots.length - 1];
-			let food = foodDot;
+		const checkIfCollapsed = () => {
+			const segments = [...snakeDots];
+			const head = snakeDots[snakeDots.length - 1];
+			segments.pop();
+			segments.forEach(dot => {
+				if (head[0] === dot[0] && head[1] === dot[1]) {
+					onGameOver()
+				}
+			});
+		}
+
+		const increaseSnakeLength = () => {
+			const array = [];
+			const [dotX, dotY] = snakeDots[0];
+			switch (direction) {
+				case DOWN:
+					array.push(dotX, dotY - 2);
+					break;
+				case UP:
+					array.push(dotX, dotY + 2);
+					break;
+				case RIGHT:
+					array.push(dotX - 2, dotY);
+					break;
+				case LEFT:
+					array.push(dotX + 2, dotY);
+					break;
+				default:
+					break;
+			}
+			return array;
+		}
+
+		const enlargeSnake = () => {
+			let newSnake = [...snakeDots];
+      		newSnake.unshift(increaseSnakeLength());
+      		setSnakeDots(newSnake);
+		}
+
+		const increaseSpeed = () => {
+			if (count % 50 === 0) {
+				setSpeed(speed *0.9);
+			}
+		}
+
+		const checkIfEat = () => {
+			const { POINTS } = icons;
+			const { STRAWBERRY, HAMBURGER, MEAT } = POINTS;
+			const head = snakeDots[snakeDots.length - 1];
+			const food = foodDot;
 
 			if (head[0] === food[0] && head[1] === food[1]) {
 				setFoodDot(getRandomCoordinates());
 				enlargeSnake();
 				increaseSpeed();
 				if (feedType === 0) {
-					setPoints(points + 1);
-				  }
-				  if (feedType === 1) {
-					setPoints(points + 5);
-				  }
-				  if (feedType === 2) {
-					setPoints(points + 10);
-				  }
-				  setFeedType(getRandomFeedType());
+					setCount(count + STRAWBERRY);
+				}
+				if (feedType === 1) {
+					setCount(count + HAMBURGER);
+				}
+				if (feedType === 2) {
+					setCount(count + MEAT);
+				}
+				setFeedType(getRandomFeedType());
 			}
 		}
 
-		function enlargeSnake() {
-			let newSnake = [...snakeDots];
-      		newSnake.unshift([]);
-      		setSnakeDots(newSnake);
-		}
-		
-
-		function increaseSpeed() {
-			if (points % 50 === 0) {
-				setSpeed(speed *0.9);
-			  }
-		}
 		checkIfEat();
 		checkIfOutOfBorders();
 		checkIfCollapsed();
-	},[feedType, foodDot, points, snakeDots, speed])
-	
-	function onGameOver() {
-		setAlive(false);
-		setSnakeDots([[0, 0], [2,0]]);
-		setFoodDot([10, 10]);
-		setDirection('RIGHT');
-		setSpeed(300);
-		setPlayerName('');
-		setPoints(0)
-	}
-    function onKeyDown(e) {
-		switch (e.keyCode) {
-			case 38: direction !== 'DOWN' && setDirection('UP');
-				break;
-			case 40: direction !== 'UP' && setDirection('DOWN');
-				break;
-			case 37: direction !== 'RIGHT' && setDirection('LEFT' );
-				break;
-			case 39: direction !== 'LEFT' && setDirection('RIGHT');
-				break;
-        	case 32: SetPause(pause => !pause);
-       			break;
-			default:
-				break;
+	},[direction, feedType, foodDot, count, setAlive, setDirection, setName, snakeDots, speed, setCount, START, END, RIGHT, DOWN, UP, LEFT])
+
+	useEffect(() => {
+		if (isOver) {
+			try {
+				addPlayer(api, { name, count });
+				alert(`${name}, the game is over! Your score is ${count}`);
+				setAlive(false);
+				setName('');
+				setCount(0);
+				setIsOver(false);
+			} catch (error) {
+				console.log(error)
+			}
 		}
-	}
+	}, [count, isOver, name, postPlayer, setAlive, setCount, setName])
 
-	// function moveSnake() {
-	// 		let dots = [...snakeDots];
-	// 		let head = dots[dots.length - 1];
-	// 		if (pause) {
-	// 			return;
-	// 		  }
-	// 		switch (direction) {
-	// 			case 'RIGHT':
-	// 				head = [head[0], head[1] + 2];
-	// 				break;
-	// 			case 'LEFT':
-	// 				head = [head[0], head[1] - 2];
-	// 				break;
-	// 			case 'DOWN':
-	// 				head = [head[0] + 2, head[1]];
-	// 				break;
-	// 			case 'UP':
-	// 				head = [head[0] - 2, head[1]];
-	// 				break;
-    //       		case 'PAUSE':
-	// 		setSnakeDots([dots[dots.length - 1],...snakeDots]);
-	// 				break;
-	// 			default:
-	// 				break;
-	// 		}
-	// 		dots.push(head);
-	// 		dots.shift();
-	// 		setSnakeDots(dots);
-	// }
-
-	// function checkIfEat() {
-	// 	let head = snakeDots[snakeDots.length - 1];
-	// 	let food = foodDot;
-
-	// 	if (head[0] === food[0] && head[1] === food[1]) {
-	// 		setFoodDot(getRandomCoordinates());
-	// 		enlargeSnake();
-	// 		increaseSpeed();
-	// 		if (feedType === 0) {
-	// 			setPoints(points + 1);
-	// 		  }
-	// 		  if (feedType === 1) {
-	// 			setPoints(points + 5);
-	// 		  }
-	// 		  if (feedType === 2) {
-	// 			setPoints(points + 10);
-	// 		  }
-	// 		  setFeedType(getRandomFeedType());
-	// 	}
-	// }
-
-	// function onGameOver() {
-    // alert(
-    //   `Game Over. Snake length is ${snakeDots.length}, Counter = ${point}.`
-    // );
-	// 	setAlive(false);
-	// 	setSnakeDots([[0, 0], [0, 2]]);
-	// 	setFoodDot([10, 10]);
-	// 	setDirection('RIGHT');
-	// }
-
-// 	function checkIfOutOfBorders() {
-//     let dots = [...snakeDots];
-// 		let head = snakeDots[snakeDots.length - 1];
-//     //Out Of Space left
-//     if( head[1] < 0 ){
-//       head[1] = 28;
-//       setSnakeDots(dots);
-//    }
-//     //Out Of Space right
-//     if( head[1] > 28){
-//       head[1] = 0;
-//       setSnakeDots(dots);
-//     }
-//     //Out Of Space up
-//     if( head[0] < 0 ){
-//       head[0] = 28;
-//       setSnakeDots(dots);
-//     }
-//     //Out Of Space down
-//     if( head[0] > 28 ){
-//       head[0] = 0;
-//       setSnakeDots(dots);
-//     }
-// 	}
-
-	// const checkIfCollapsed=()=> {
-	// 	let snake = [...snakeDots];
-	// 	const head = snake[snake.length - 1];
-	// 	snake.pop();
-	// 	snake.forEach((dot,_) => {
-	// 			if (head[0] === dot[0] && head[1] === dot[1]) {
-	// 				// onGameOver();
-	// 				alert('cross')
-	// 			}
-	// 	});
-	// }
-
-	// function enlargeSnake() {
-	// 	let newSnake = [snakeDots[snakeDots.length - 1], ...snakeDots];
-	// 	setSnakeDots(newSnake);
-	// }
-
-	// function increaseSpeed() {
-	// 	if (points % 50 === 0) {
-	// 		setSpeed(speed *0.9);
-	// 	  }
-	// }
-
-	// function onGameOver() {
-    // alert(
-    //   `Game Over. Snake length is ${snakeDots.length}, Score = ${points}.`
-    // );
-	// 	setAlive(false);
-	// 	setSnakeDots([[0, 0], [2,0]]);
-	// 	setFoodDot([10, 10]);
-	// 	setDirection('RIGHT');
-	// 	setSpeed(300);
-	// }
-
-	function rePlay() {
-		setDirection('RIGHT');
-		setName('Play again');
-		setPoints(0);
-		setAlive(true);
-	}
-	const handleChange = e => {
-		const { name, value } = e.currentTarget;
-		switch (name) {
-		  case 'playerName':
-			setPlayerName(value);
-			break;
-
-		  default:
-			return;
-		}
-	  };
-	  const submitForm = e => {
-		e.preventDefault();
-		setPlayerName('');
-
-	  };
-
-
-  return (
-    <>
-      <Container>
-        {alive ? (
-				<div>
-					<Wrapper>
+	return (
+		<Container>
+			{alive
+				?   <Wrapper>
 						<Snake snakeDots={snakeDots} />
 						<Food foodDot={foodDot} feedType={feedType}/>
 					</Wrapper>
-				</div>
-			) : (
-				<div>
-					<Box onSubmit={submitForm}>
-						<Input
-        					type="text"
-        					name="playerName"
-        					value={playerName}
-       						onChange={handleChange}
-        					placeholder="Name"
-							pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-							required
-      					/>
-						<Button onClick={rePlay} type="submit">{name}</Button>
-					</Box>
-				</div>
-			)}
-        <PlayersList points={points} playerName={playerName} onGameOver = {()=>onGameOver()}/>
-      </Container>
-    </>
-  );
+				:   <FormPlayer/>
+			}
+			<PlayersList points={count} playerName={name}/>
+		</Container>
+	);
 };
+
 export default App;

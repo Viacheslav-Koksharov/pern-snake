@@ -1,52 +1,58 @@
-import { useState, useEffect } from 'react';
-import {CurrentPlayer, List, ListItem, Item } from './PlayersList.styled';
+import PropTypes from 'prop-types';
+import { useState, useEffect, useContext } from 'react';
+import { playerContext } from '../../context/PlayerContextProvider';
+import { aliveContext } from '../../context/AliveContextProvider';
+import { fetchPlayers } from '../../helpers/helpers';
 import * as api from '../../service/api';
+import { CurrentPlayer, List, ListItem, Item } from './PlayersList.styled';
 
-const PlayersList = ({points,playerName, onGameOver}) => {
-  const [scores, setScores] = useState();
-  const [name, setName] = useState();
-  const [score, setScorePlayer] = useState();
-  // console.log(name);
+const PlayersList = ({ points, playerName }) => {
+  const { name, setName, count, setCount } = useContext(playerContext);
+  const { alive } = useContext(aliveContext);
+  const [players, setPlayers] = useState(null);
 
-  const fetchPlayers = async () => {
-    const { data } = await api.getPlayer();
-    return data;
-  };
-
-  // const addPlayers = async ({ name, score }) => {
-  //   const { data } = await api.postPlayer({ name, score });
-  //   return data;
-  // };
- 
   useEffect(() => {
-    fetchPlayers().then(playersScores => setScores(playersScores));
-  }, [scores]);
-  
+    try {
+      fetchPlayers(api).then(playersScores => setPlayers(playersScores));
+    } catch (error) {
+      console.log(error)
+    }
+  }, [alive]);
+
   useEffect(() => {
-        setName(playerName);
-  setScorePlayer(points);
-  },[playerName, points]);
+    setName(playerName);
+    setCount(points);
+  }, [playerName, points, setCount, setName]);
 
   return (
-    <>
-      <List>
-        <CurrentPlayer>
-          {name? (<><Item>{name}</Item><Item>{score}</Item></>):(<Item>No player</Item>)}          
-          </CurrentPlayer>
+    <List>
+      <CurrentPlayer>
+        {name
+          ? (<>
+              <Item>{name}</Item>
+              <Item>{count}</Item>
+            </>)
+          : <Item>No player</Item>
+        }
+      </CurrentPlayer>
         Champions
-        <ListItem>
-          <Item>Name</Item>
-          <Item>Score</Item>
-        </ListItem>
-        {scores?.map(item => (
-          <ListItem key={item.id}>
-            <Item>{item.name}</Item>
-            <Item>{item.score}</Item>
+      <ListItem>
+        <Item>Name</Item>
+        <Item>Score</Item>
+      </ListItem>
+      { players?.map(({ id, name, score }) => (
+          <ListItem key={id}>
+            <Item>{name}</Item>
+            <Item>{score}</Item>
           </ListItem>
-        ))}
-      </List>
-    </>
+      ))}
+    </List>
   );
+};
+
+PlayersList.propTypes = {
+  points: PropTypes.number,
+  playerName: PropTypes.string.isRequired
 };
 
 export default PlayersList;

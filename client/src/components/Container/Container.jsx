@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 import { ContainerStyled } from './Container.styled.js';
 
 const Container = ({ children }) => {
-    return (
-        <ContainerStyled>{children}</ContainerStyled>
-    )
+  return (
+    <ContainerStyled>{children}</ContainerStyled>
+  )
 }
 
 Container.propTypes = {

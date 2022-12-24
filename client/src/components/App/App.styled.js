@@ -14,8 +14,8 @@ const Content = styled.span`
 `;
 
 const Input = styled.input`
-margin: 0;
-padding: 2px;
+	margin: 0;
+	padding: 2px;
 `;
 
 const Wrapper = styled.section`
@@ -23,6 +23,7 @@ const Wrapper = styled.section`
 	height: 30rem;
 	width: 30rem;
 	background: #333;
+	overflow: hidden;
 `;
 
 const Button = styled.button`
