@@ -30,7 +30,6 @@ const Button = styled.button`
 	/* Adapt the colors based on primary prop */
 	margin: 1em;
 	padding: 0.25em 1em;
-	width: 100px;
 	border: 2px solid #333;
 	border-radius: 3px;
 	background-color: grey;
