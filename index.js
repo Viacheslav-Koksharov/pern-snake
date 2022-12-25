@@ -17,12 +17,14 @@ if(process.env.NODE_ENV === "production"){
     // npm run build
     app.use(express.static(path.join(__dirname, "client/build")))
 }
-console.log(__dirname)
-console.log(path.join(__dirname, "client/build"))
+// console.log(__dirname)
+// console.log(path.join(__dirname, "client/build"))
 
 //ROUTES//
 //create a score
-app.post("/snake", async (req, res) => {
+app
+.route("/snake")
+.post(async (req, res) => {
     try {
         const newScore = await pool.query(
             "INSERT INTO snake (name, score) VALUES($1, $2) RETURNING *",
@@ -35,8 +37,10 @@ app.post("/snake", async (req, res) => {
 });
 
 //get all score
-app.get("/snake", async (_, res) => {
-    try {
+app.
+route("/snake")
+.get(async (_, res) => {
+    try {        
         const allScores = await pool.query("SELECT * FROM snake ORDER BY score DESC  LIMIT 10");
         res.json(allScores.rows);
     } catch (err) {
