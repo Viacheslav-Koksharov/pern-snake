@@ -58,6 +58,6 @@ app.get("*", (_, res) => {
     res.sendFile(path.join(__dirname, "client/build/index.html"));
 });
 
-app.listen(5000, () => {
+app.listen(PORT, () => {
     console.log(`server has started on port ${PORT}`);
 });
