@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { playerContext } from '../../context/PlayerContextProvider';
 import { directionContext } from '../../context/DirectionContextProvider';
 import { aliveContext } from '../../context/AliveContextProvider';
-import { getRandomCoordinates, getRandomFeedType, addPlayer } from '../../helpers/helpers';
+import { getRandomCoordinates, getRandomFeedType, addPlayer } from '../../utils/utils';
+import { changeDirection, moveSnake } from '../../helpers/helpers';
 import { buttons } from '../../constants/buttons';
 import { icons } from '../../constants/icons';
 import { fullpoints } from '../../constants/fullpoints';
@@ -12,10 +13,10 @@ import FormPlayer from '../FormPlayer';
 import PlayersList from '../PlayersList';
 import Snake from '../Snake';
 import Food from '../Food';
-import { Wrapper } from './App.styled';
+import { Title, Wrapper } from './App.styled';
 
 const App = () => {
-	const { KEYS, DIRECTIONS } = buttons;
+	const { DIRECTIONS } = buttons;
 	const { UP, DOWN, RIGHT, LEFT, PAUSE } = DIRECTIONS;
 	const { START, END } = fullpoints;
 	const { postPlayer } = api;
@@ -28,74 +29,33 @@ const App = () => {
 	const [speed, setSpeed] = useState(300);
 	const [feedType, setFeedType] = useState(getRandomFeedType());
 	const [isOver, setIsOver] = useState(false);
+	const [speedLevel, setSpeedLevel] = useState(0);
 
 	useEffect(() => {
 		const onKeyDown = (e) => {
-			switch (e.keyCode) {
-				case KEYS.UP:
-					direction !== DOWN && setDirection(UP);
-					break;
-				case KEYS.DOWN:
-					direction !== UP && setDirection(DOWN);
-					break;
-				case KEYS.LEFT:
-					direction !== RIGHT && setDirection(LEFT);
-					break;
-				case KEYS.RIGHT:
-					direction !== LEFT && setDirection(RIGHT);
-					break;
-				case KEYS.PAUSE: setPause(pause => !pause);
-					   break;
-				default:
-					break;
-			}
+			changeDirection(e.keyCode, direction, setDirection, setPause);
 		}
 
-		document.addEventListener('keydown', onKeyDown);
-		return () => {
-			document.removeEventListener('keydown', onKeyDown);
-		};
-	}, [DOWN, KEYS.DOWN, KEYS.LEFT, KEYS.PAUSE, KEYS.RIGHT, KEYS.UP, LEFT, RIGHT, UP, direction, setDirection]);
+		if (alive) {
+			document.addEventListener('keydown', onKeyDown);
+			return () => {
+				document.removeEventListener('keydown', onKeyDown);
+			};
+		}
+	}, [alive, direction, setDirection]);
 
 	useEffect(() => {
 		if (pause) {
 			return;
 		}
 
-		const moveSnake = () => {
-			const dots = [...snakeDots];
-			let head = dots[dots.length - 1];
-			const [dotX, dotY] = head;
-
-			switch (direction) {
-				case RIGHT:
-					head = [dotX + 2, dotY];
-					break;
-				case LEFT:
-					head = [dotX - 2, dotY];
-					break;
-				case DOWN:
-					head = [dotX, dotY + 2];
-					break;
-				case UP:
-					head = [dotX, dotY - 2];
-					break;
-          		case PAUSE:
-					setSnakeDots([...snakeDots]);
-					break;
-				default:
-					break;
-			}
-			dots.push(head);
-			dots.shift();
-			setSnakeDots(dots);
+		if (alive) {
+			const run = setInterval(() => {
+				moveSnake(snakeDots, setSnakeDots, direction);
+			}, speed);
+			return () => clearInterval(run);
 		}
-
-		const run = setInterval(() => {
-			moveSnake(alive);
-		}, speed);
-		return () => clearInterval(run);
-	},[DOWN, LEFT, PAUSE, RIGHT, UP, alive, direction, pause, snakeDots, speed])
+	},[alive, direction, pause, snakeDots, speed])
 
 	useEffect(() => {
 		const checkIfOutOfBorders = () => {
@@ -170,12 +130,6 @@ const App = () => {
       		setSnakeDots(newSnake);
 		}
 
-		const increaseSpeed = () => {
-			if (count % 50 === 0) {
-				setSpeed(speed *0.9);
-			}
-		}
-
 		const checkIfEat = () => {
 			const { POINTS } = icons;
 			const { STRAWBERRY, HAMBURGER, MEAT } = POINTS;
@@ -185,7 +139,6 @@ const App = () => {
 			if (head[0] === food[0] && head[1] === food[1]) {
 				setFoodDot(getRandomCoordinates());
 				enlargeSnake();
-				increaseSpeed();
 				if (feedType === 0) {
 					setCount(count + STRAWBERRY);
 				}
@@ -202,7 +155,15 @@ const App = () => {
 		checkIfEat();
 		checkIfOutOfBorders();
 		checkIfCollapsed();
-	},[direction, feedType, foodDot, count, setAlive, setDirection, setName, snakeDots, speed, setCount, START, END, RIGHT, DOWN, UP, LEFT])
+	},[direction, feedType, foodDot, count, setAlive, setDirection, setName, snakeDots, speed, setCount, START, END, RIGHT, DOWN, UP, LEFT, speedLevel])
+
+	useEffect(() => {
+		const level = Math.trunc(count / 50);
+		if (level > speedLevel) {
+			setSpeedLevel(level);
+			setSpeed(speed => speed * 0.9);
+		}
+	}, [count, speedLevel])
 
 	useEffect(() => {
 		if (isOver) {
@@ -220,7 +181,9 @@ const App = () => {
 	}, [count, isOver, name, postPlayer, setAlive, setCount, setName])
 
 	return (
-		<Container>
+		<Container center>
+			<Title>You can be a champion! Just try!!!</Title>
+			<Container external flex justifyCenter>
 			{alive
 				?   <Wrapper>
 						<Snake snakeDots={snakeDots} />
@@ -229,6 +192,7 @@ const App = () => {
 				:   <FormPlayer/>
 			}
 			<PlayersList points={count} playerName={name}/>
+			</Container>
 		</Container>
 	);
 };

@@ -1,21 +1,8 @@
 import styled from "styled-components";
 
-const Box = styled.form`
-	display: flex;
-	flex-direction: column;
-	align-content: center;
-	justify-content: center;
-`;
-
-const Content = styled.span`
-	font-size: 1em;
-	text-align: center;
-	color: #333;
-`;
-
-const Input = styled.input`
-	margin: 0;
-	padding: 2px;
+const Title = styled.h1`
+	margin: 0 auto;
+	font-weight: 500;
 `;
 
 const Wrapper = styled.section`
@@ -23,19 +10,10 @@ const Wrapper = styled.section`
 	height: 30rem;
 	width: 30rem;
 	background: #333;
+	border: 1px solid #6e7888;
+  	border-radius: 4px;
+	box-shadow: rgb(0 0 0 / 25%) 0px 14px 28px, rgb(0 0 0 / 22%) 0px 10px 10px;
 	overflow: hidden;
 `;
 
-const Button = styled.button`
-	/* Adapt the colors based on primary prop */
-	margin: 1em;
-	padding: 0.25em 1em;
-	border: 2px solid #333;
-	border-radius: 3px;
-	background-color: grey;
-	color: #f2f5f3;
-    font-size: 18px;
-    background-color: grey;
-`;
-
-export { Box,Content,Input,Wrapper,Button };
+export { Title, Wrapper };

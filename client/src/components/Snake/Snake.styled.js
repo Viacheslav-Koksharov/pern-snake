@@ -4,8 +4,9 @@ const SnakeItem = styled.div`
 	position: absolute;
 	height: 2rem;
 	width: 2rem;
-	background: mediumseagreen;
-	border: solid 1px #333;
+	background: rgb(5, 224, 104);
+	border: 1px solid #6e7888;
+  	border-radius: 4px;
 	z-index: 2;
 	top: ${(props) => props.top};
 	left: ${(props) => props.left};
