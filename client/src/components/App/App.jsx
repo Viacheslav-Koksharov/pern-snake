@@ -2,12 +2,10 @@ import React, { useState, useEffect, useContext } from 'react';
 import { playerContext } from '../../context/PlayerContextProvider';
 import { directionContext } from '../../context/DirectionContextProvider';
 import { aliveContext } from '../../context/AliveContextProvider';
-import { getRandomCoordinates, getRandomFeedType, addPlayer } from '../../utils/utils';
-import { changeDirection, moveSnake } from '../../helpers/helpers';
+import { getRandomCoordinates, getRandomFeedType } from '../../utils/utils';
+import { changeDirection, moveSnake, checkIfOutOfBorders, checkIfCollapsed, increaseSnakeLength, addPlayer } from '../../helpers/helpers';
 import { buttons } from '../../constants/buttons';
 import { icons } from '../../constants/icons';
-import { fullpoints } from '../../constants/fullpoints';
-import * as api from '../../service/api';
 import Container from '../Container';
 import FormPlayer from '../FormPlayer';
 import PlayersList from '../PlayersList';
@@ -17,9 +15,6 @@ import { Title, Wrapper } from './App.styled';
 
 const App = () => {
 	const { DIRECTIONS } = buttons;
-	const { UP, DOWN, RIGHT, LEFT, PAUSE } = DIRECTIONS;
-	const { START, END } = fullpoints;
-	const { postPlayer } = api;
 	const { name, setName, count, setCount } = useContext(playerContext);
 	const { direction, setDirection } = useContext(directionContext);
 	const { alive, setAlive } = useContext(aliveContext);
@@ -55,78 +50,20 @@ const App = () => {
 			}, speed);
 			return () => clearInterval(run);
 		}
-	},[alive, direction, pause, snakeDots, speed])
+	}, [alive, direction, pause, snakeDots, speed])
 
 	useEffect(() => {
-		const checkIfOutOfBorders = () => {
-			const dots = [...snakeDots];
-			let head = snakeDots[snakeDots.length - 1];
-			//Out Of Space left
-			if (head[1] < START ){
-			  head[1] = END;
-			  setSnakeDots(dots);
-		   	}
-			//Out Of Space right
-			if (head[1] > END){
-			  head[1] = START;
-			  setSnakeDots(dots);
-			}
-			//Out Of Space up
-			if (head[0] < START ){
-			  head[0] = END;
-			  setSnakeDots(dots);
-			}
-			//Out Of Space down
-			if (head[0] > END ){
-			  head[0] = START;
-			  setSnakeDots(dots);
-			}
-		}
-
 		const onGameOver = () => {
 			setFoodDot([10, 10]);
-			setDirection(RIGHT);
+			setDirection(DIRECTIONS.RIGHT);
 			setSpeed(300);
 			setSnakeDots([[0, 0], [2, 0]]);
 			setIsOver(true);
 		}
 
-		const checkIfCollapsed = () => {
-			const segments = [...snakeDots];
-			const head = snakeDots[snakeDots.length - 1];
-			segments.pop();
-			segments.forEach(dot => {
-				if (head[0] === dot[0] && head[1] === dot[1]) {
-					onGameOver()
-				}
-			});
-		}
-
-		const increaseSnakeLength = () => {
-			const array = [];
-			const [dotX, dotY] = snakeDots[0];
-			switch (direction) {
-				case DOWN:
-					array.push(dotX, dotY - 2);
-					break;
-				case UP:
-					array.push(dotX, dotY + 2);
-					break;
-				case RIGHT:
-					array.push(dotX - 2, dotY);
-					break;
-				case LEFT:
-					array.push(dotX + 2, dotY);
-					break;
-				default:
-					break;
-			}
-			return array;
-		}
-
 		const enlargeSnake = () => {
 			let newSnake = [...snakeDots];
-      		newSnake.unshift(increaseSnakeLength());
+      		newSnake.unshift(increaseSnakeLength(snakeDots, direction));
       		setSnakeDots(newSnake);
 		}
 
@@ -153,9 +90,9 @@ const App = () => {
 		}
 
 		checkIfEat();
-		checkIfOutOfBorders();
-		checkIfCollapsed();
-	},[direction, feedType, foodDot, count, setAlive, setDirection, setName, snakeDots, speed, setCount, START, END, RIGHT, DOWN, UP, LEFT, speedLevel])
+		checkIfOutOfBorders(snakeDots, setSnakeDots);
+		checkIfCollapsed(snakeDots, onGameOver);
+	}, [DIRECTIONS.RIGHT, count, direction, feedType, foodDot, setCount, setDirection, snakeDots])
 
 	useEffect(() => {
 		const level = Math.trunc(count / 50);
@@ -168,7 +105,7 @@ const App = () => {
 	useEffect(() => {
 		if (isOver) {
 			try {
-				addPlayer(api, { name, count });
+				addPlayer({ name, count });
 				alert(`${name}, the game is over! Your score is ${count}`);
 				setAlive(false);
 				setName('');
@@ -178,7 +115,7 @@ const App = () => {
 				console.log(error)
 			}
 		}
-	}, [count, isOver, name, postPlayer, setAlive, setCount, setName])
+	}, [count, isOver, name, setAlive, setCount, setName])
 
 	return (
 		<Container center>

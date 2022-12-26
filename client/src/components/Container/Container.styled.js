@@ -7,7 +7,7 @@ const ContainerStyled = styled.div`
     width: ${(props) => (props.external ? "90%" : "auto")};
     margin: ${(props) => (props.external ? "0 auto" : "0")};
     padding: ${(props) => (props.external ? "20px" : "10px")};
-    text-align: ${(props) => (props.center ? "center" : "start")}
+    text-align: ${(props) => (props.center ? "center" : "start")};
 `;
 
 export { ContainerStyled };

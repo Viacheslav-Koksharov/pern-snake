@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { useState, useEffect, useContext } from 'react';
 import { playerContext } from '../../context/PlayerContextProvider';
 import { aliveContext } from '../../context/AliveContextProvider';
-import { fetchPlayers } from '../../utils/utils';
+import { fetchPlayers } from '../../helpers/helpers';
 import * as api from '../../service/api';
 import Container from '../Container';
 import { Title, List, ListItem, Item } from './PlayersList.styled';
@@ -16,7 +16,7 @@ const PlayersList = ({ points, playerName }) => {
     try {
       fetchPlayers(api).then(playersScores => setPlayers(playersScores));
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }, [alive]);
 

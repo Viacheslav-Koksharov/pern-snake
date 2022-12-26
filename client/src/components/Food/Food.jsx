@@ -32,6 +32,6 @@ const Food = ({ foodDot, feedType })=> {
 Food.propTypes = {
 	foodDot: PropTypes.array.isRequired,
 	feedType: PropTypes.node.isRequired
-  };
+};
 
 export default Food;

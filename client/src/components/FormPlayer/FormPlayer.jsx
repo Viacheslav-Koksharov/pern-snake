@@ -7,7 +7,7 @@ import { buttons } from '../../constants/buttons';
 import { inputs } from '../../constants/inputs';
 import Container from '../Container/Container';
 import snakeImage from '../../images/snake.jpg';
-import { Title, Image, Form, Input, Error, Button } from './Form.styled';
+import { Title, Image, Form, Input, Error, Button } from './FormPlayer.styled';
 
 const FormPlayer = () => {
 	const { VALUES, TYPES, DIRECTIONS } = buttons;

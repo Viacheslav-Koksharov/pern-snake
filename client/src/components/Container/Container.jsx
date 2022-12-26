@@ -23,4 +23,4 @@ Container.propTypes = {
   center: PropTypes.bool
 };
 
-export default Container
+export default Container;

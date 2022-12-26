@@ -4,7 +4,6 @@ const FoodItem = styled.div`
 	position: absolute;
 	background-repeat: no-repeat;
 	background-size: cover;
-	
 	height: 2rem;
 	width: 2rem;
 	border-radius: 50%;

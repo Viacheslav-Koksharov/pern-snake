@@ -22,7 +22,7 @@ const Form = styled.form`
 `;
 
 const Input = styled.input`
-  width: 100%;
+  width: 200px;
   height: 35px;
   margin: 0 auto 5px;
   padding: 5px;

@@ -10,14 +10,4 @@ const getRandomFeedType = () => {
 	return Math.floor((Math.random() * 3));
 }
 
-const fetchPlayers = async (api) => {
-    const { data } = await api.getPlayer();
-    return data;
-};
-
-const addPlayer = async (api, { name, count }) => {
-	const { data } = await api.postPlayer({ name, 'score': count });
-	return data;
-};
-
-export { getRandomCoordinates, getRandomFeedType, fetchPlayers, addPlayer };
+export { getRandomCoordinates, getRandomFeedType };
